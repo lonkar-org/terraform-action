@@ -12,7 +12,7 @@ inputs:
   backend-config:
     description: path to backend config
     required: false
-    default: "false"
+    default: "backend.config"
 runs:
   using: "composite"
   steps:
@@ -23,17 +23,17 @@ runs:
         terraform fmt -check .
         echo -e "\033[1;36mTerraform initializing\033[0m"
         if [[ "${{ inputs.backend-config }}" == "false" ]]; then
-          terraform init
+          terraform init -input=false
         else
-          terraform init -backend-config="${{ inputs.backend-config }}"
+          terraform init -input=false -backend-config="${{ inputs.backend-config }}"
         fi
         echo -e "\033[1;36mValidating scripts\033[0m"
         terraform validate
         echo -e "\033[1;36mGenerating plan\033[0m"
-        terraform plan -out=plan.tfout
+        terraform plan -input=false -out=plan.tfout
         if [[ "${{ inputs.apply }}" == "true" ]]; then
           echo -e "\033[1;36mApplying infrastructure changes\033[0m"
-          terraform apply plan.tfout;
+          terraform apply -input=false plan.tfout;
         else
           echo -e "\033[1;33mSkipping apply\033[0m";
         fi;
