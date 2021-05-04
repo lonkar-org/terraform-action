@@ -65,6 +65,6 @@ runs:
         output_content=`cat ./output.json`
         output_content="${output_content//'%'/'%25'}"
         output_content="${output_content//$'\n'/'%0A'}"
-        output_content="${output_content//$'\r'/'%0D'}
+        output_content="${output_content//$'\r'/'%0D'}"
         echo "::set-output name=json::$output_content"
 
