@@ -67,4 +67,5 @@ runs:
         output_content="${output_content//$'\n'/'%0A'}"
         output_content="${output_content//$'\r'/'%0D'}"
         echo "::set-output name=json::$output_content"
+        echo "$output_content"
 
