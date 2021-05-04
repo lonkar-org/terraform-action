@@ -60,8 +60,9 @@ runs:
         if [[ "${{ inputs.apply }}" != "true" ]]; then
           echo -e "\033[1;33mTerraform apply skipped, output json will not reflect values from plan.\033[0m";
         fi
-        echo -e "\033[1;36mGenerating output\033[0m"
-        terraform output -json > output.json
+        echo -e "\033[1;36mGenerating output\033[0m";
+        terraform output -json > output.json;
+        cat ./output.json;
         output_content=`cat ./output.json`
         output_content="${output_content//'%'/'%25'}"
         output_content="${output_content//$'\n'/'%0A'}"
