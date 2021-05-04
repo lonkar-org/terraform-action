@@ -1,0 +1,39 @@
+name: Terraform
+description: Check format, init, validate, plans and deploys terraform script
+inputs:
+  apply:
+    description: should the infrastructure change be applied
+    required: false
+    default: "false"
+  working-directory:
+    description: directory to run terraform in
+    required: false
+    default: infra
+  backend-config:
+    description: path to backend config
+    required: false
+    default: "false"
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        echo -e "\033[1;36mChecking file format\033[0m"
+        terraform fmt -check .
+        echo -e "\033[1;36mTerraform initializing\033[0m"
+        if [[ "${{ inputs.backend-config }}" == "false" ]]; then
+          terraform init
+        else
+          terraform init -backend-config="${{ inputs.backend-config }}"
+        fi
+        echo -e "\033[1;36mValidating scripts\033[0m"
+        terraform validate
+        echo -e "\033[1;36mGenerating plan\033[0m"
+        terraform plan -out=plan.tfout
+        if [[ "${{ inputs.apply }}" == "true" ]]; then
+          echo -e "\033[1;36mApplying infrastructure changes\033[0m"
+          terraform apply plan.tfout;
+        else
+          echo -e "\033[1;33mSkipping apply\033[0m";
+        fi;
