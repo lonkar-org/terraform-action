@@ -16,7 +16,7 @@ inputs:
 outputs:
   json:
     description: json output from `terraform out -json`
-    value: ${{ steps.generate-output.sanitize.json }}
+    value: ${{ steps.terraform-output.outputs.stdout }}
 runs:
   using: "composite"
   steps:
@@ -62,14 +62,3 @@ runs:
         fi
         echo -e "\033[1;36mGenerating output\033[0m";
         terraform output -json
-    - id: sanitize
-      shell: bash
-      run: |
-        output_content="${{ steps.terraform-output.outputs.stdout }}"
-        echo "${output_content}"
-        output_content="${output_content//'%'/'%25'}"
-        output_content="${output_content//$'\n'/'%0A'}"
-        output_content="${output_content//$'\r'/'%0D'}"
-        echo "::set-output name=json::$output_content"
-        echo "$output_content"
-
