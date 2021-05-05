@@ -16,7 +16,7 @@ inputs:
 outputs:
   json:
     description: json output from `terraform out -json`
-    value: ${{ steps.generate-output.outputs.json_out }}
+    value: ${{ steps.generate-output.sanitize.json }}
 runs:
   using: "composite"
   steps:
@@ -53,7 +53,7 @@ runs:
         else
           echo -e "\033[1;33mSkipping apply\033[0m";
         fi;
-    - id: generate-output
+    - id: terraform-output
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
@@ -61,12 +61,15 @@ runs:
           echo -e "\033[1;33mTerraform apply skipped, output json will not reflect values from plan.\033[0m";
         fi
         echo -e "\033[1;36mGenerating output\033[0m";
-        terraform output -json > output.json;
-        cat ./output.json;
-        output_content=$(cat ./output.json)
+        terraform output -json
+    - id: sanitize
+      shell: bash
+      run: |
+        output_content="${{ steps.terraform-output.outputs.stdout }}"
+        echo "${output_content}"
         output_content="${output_content//'%'/'%25'}"
         output_content="${output_content//$'\n'/'%0A'}"
         output_content="${output_content//$'\r'/'%0D'}"
-        echo "::set-output name=json_out::$output_content"
+        echo "::set-output name=json::$output_content"
         echo "$output_content"
 
