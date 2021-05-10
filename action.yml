@@ -1,0 +1,64 @@
+name: Terraform
+description: A composite action that checks format, init, validate, plan, deploy and generate json output from terraform scripts
+inputs:
+  apply:
+    description: should the infrastructure change be applied
+    required: false
+    default: "false"
+  working-directory:
+    description: directory to run terraform in
+    required: false
+    default: infra
+  backend-config:
+    description: path to backend config, if set `false` will not use backend config
+    required: false
+    default: "backend.config"
+outputs:
+  json:
+    description: json output from `terraform out -json`
+    value: ${{ steps.terraform-output.outputs.stdout }}
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        echo -e "\033[1;36mChecking file format\033[0m"
+        terraform fmt -check .
+    - shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        echo -e "\033[1;36mTerraform initializing\033[0m"
+        if [[ "${{ inputs.backend-config }}" == "false" ]]; then
+          terraform init -input=false
+        else
+          terraform init -input=false -backend-config="${{ inputs.backend-config }}"
+        fi
+    - shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        echo -e "\033[1;36mValidating scripts\033[0m"
+        terraform validate
+    - shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        echo -e "\033[1;36mGenerating plan\033[0m"
+        terraform plan -input=false -out=plan.tfout
+    - shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if [[ "${{ inputs.apply }}" == "true" ]]; then
+          echo -e "\033[1;36mApplying infrastructure changes\033[0m"
+          terraform apply -input=false plan.tfout;
+        else
+          echo -e "\033[1;33mSkipping apply\033[0m";
+        fi;
+    - id: terraform-output
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if [[ "${{ inputs.apply }}" != "true" ]]; then
+          echo -e "\033[1;33mTerraform apply skipped, output json will not reflect values from plan.\033[0m";
+        fi
+        echo -e "\033[1;36mGenerating output\033[0m";
+        terraform output -json
