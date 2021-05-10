@@ -1,4 +1,4 @@
-name: Terraform
+name: terraform-action
 description: A composite action that checks format, init, validate, plan, deploy and generate json output from terraform scripts
 inputs:
   apply:
